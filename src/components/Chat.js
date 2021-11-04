@@ -37,9 +37,6 @@ class Chat extends React.Component {
             _this.setState(
                 {
                     messages: messages,
-                    message: {
-                        description: ''
-                    }
                 },
                 () => {
                     let chatDiv = document.getElementById("chat-messages");
@@ -72,6 +69,8 @@ class Chat extends React.Component {
         }
 
         socket.emit('chat message', this.state.message.description);
+
+        event.target.reset();
     }
 
     render() {
@@ -112,10 +111,10 @@ class Chat extends React.Component {
 
                 <div className="row h-auto">
                     <div className="fixed-bottom mb-3">
-                        <form action="" onSubmit={ this.handleSubmit }>
+                        <form action="" onSubmit={ this.handleSubmit } id="chat-form">
                             <div className="row">
                                 <div className="col-sm-11 form-group">
-                                    <input type="text" name="description" className="form-control" placeholder="Message..." value={ this.state.message.description } onChange={ this.handleChange } />
+                                    <input type="text" name="description" className="form-control" placeholder="Message..." onChange={ this.handleChange } />
                                 </div>
 
                                 <div className="col-sm-1">
