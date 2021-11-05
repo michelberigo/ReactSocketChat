@@ -1,11 +1,9 @@
 import React from "react";
-import Chat from './components/Chat';
+import Routes from "./routes";
 
 function App() {
     return (
-        <div className="h-100">
-            <Chat />
-        </div>
+        <Routes />
     );
 }
 
