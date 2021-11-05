@@ -11,23 +11,35 @@ app.use(index);
 const server = http.createServer(app);
 const io = socketIo(server);
 
+let roomsCount = 1;
+
 io.on("connection", (socket) => {
+    let roomId = "room" + roomsCount;
+
+    socket.join(roomId);
+
+    io.to(roomId).emit('chat message', socket.id, 'login', '')
+    io.to(roomId).emit('room config', io.engine.clientsCount, roomId);
+
     console.log("New client connected");
     console.log("Total users logged: " + io.engine.clientsCount);
 
-    io.emit('chat message', socket.id, 'login', '');
-    io.emit('users count', io.engine.clientsCount);
+    socket.on('disconnecting', function() {
+        let rooms = socket.rooms;
+    
+        rooms.forEach(function(roomId) {
+            io.to(roomId).emit('chat message', socket.id, 'logout', '');
+            io.to(roomId).emit('room config', io.engine.clientsCount, roomId);
+        });
+    });
 
     socket.on("disconnect", () => {
         console.log("Client disconnected");
         console.log("Total users logged: " + io.engine.clientsCount);
-
-        io.emit('chat message', socket.id, 'logout', '');
-        io.emit('users count', io.engine.clientsCount);
     });
 
-    socket.on("chat message", (message) => {
-        io.emit('chat message', socket.id, 'chat', message);
+    socket.on("chat message", (roomId, message) => {
+        io.to(roomId).emit('chat message', socket.id, 'chat', message);
     });
 });
 

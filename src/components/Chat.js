@@ -12,13 +12,13 @@ class Chat extends React.Component {
 
         this.state = {
             messages: [],
-            message: {
-                description: ''
-            },
-            users_count: 0
+            room_config: {
+                room_id: '',
+                users_count: 0,
+            }
+            
         };
 
-        this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -34,41 +34,32 @@ class Chat extends React.Component {
                 chat_action: chatAction
             });
 
-            _this.setState(
-                {
-                    messages: messages,
-                },
-                () => {
-                    let chatDiv = document.getElementById("chat-messages");
-                    chatDiv.scrollTop = chatDiv.scrollHeight;
+            _this.setState({messages: messages}, () => {
+                let chatDiv = document.getElementById("chat-messages");
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            });
+        });
+
+        socket.on('room config', function (usersCount, roomId) {
+            _this.setState({
+                room_config: {
+                    room_id: roomId,
+                    users_count: usersCount
                 }
-            );
-        });
-
-        socket.on('users count', function (usersCount) {
-            _this.setState({users_count: usersCount});
-        });
-    }
-
-    handleChange(event) {
-        event.preventDefault();
-
-        let name = event.target.name;
-        let value = event.target.value;
-        
-        this.setState({
-            message: {[name]: value}
+            });
         });
     }
 
     handleSubmit(event) {
         event.preventDefault();
 
-        if (!this.state.message.description.trim()) {
+        let message = document.getElementById('chat_description').value;
+
+        if (!message.trim()) {
             return;
         }
 
-        socket.emit('chat message', this.state.message.description);
+        socket.emit('chat message', this.state.room_config.room_id, message);
 
         event.target.reset();
     }
@@ -79,7 +70,7 @@ class Chat extends React.Component {
                 <div className="row h-auto">
                     <div className="clearfix">
                         <div className="float-start"><h1 className="text-center mt-3">MESSAGES - { this.state.messages.length }</h1></div>
-                        <div className="float-end"><h1 className="text-center mt-3">USERS LOGGED - { this.state.users_count }</h1></div>
+                        <div className="float-end"><h1 className="text-center mt-3">{ this.state.room_config.room_id } - { this.state.room_config.users_count } USERS</h1></div>
                     </div>
                 </div>
 
@@ -114,7 +105,7 @@ class Chat extends React.Component {
                         <form action="" onSubmit={ this.handleSubmit } id="chat-form">
                             <div className="row">
                                 <div className="col-sm-11 form-group">
-                                    <input type="text" name="description" className="form-control" placeholder="Message..." onChange={ this.handleChange } />
+                                    <input type="text" name="description" id="chat_description" className="form-control" placeholder="Message..." />
                                 </div>
 
                                 <div className="col-sm-1">
